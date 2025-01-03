@@ -25,11 +25,11 @@ async function run() {
     await client.connect();
 
     const petsCollection = client.db("petsaveDB").collection("pets");
+    const fosterCollection = client.db("petsaveDB").collection("fosterPet");
 
     //pets related API's
     app.get("/pets", async (req, res) => {
-      const cursor = petsCollection.find();
-      const result = await cursor.toArray();
+      const result = await petsCollection.find().toArray();
       res.send(result);
     });
 
@@ -37,6 +37,22 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await petsCollection.findOne(query);
+      res.send(result);
+    });
+
+    // user related API's
+    app.post("/user/fosterPost", async (req, res) => {
+      const foster = req.body;
+      const fosterResult = await fosterCollection.insertOne(foster);
+      res.send(fosterResult);
+    });
+
+    app.get("/user/fosterPost/:email", async (req, res) => {
+      const query = { email: req.params.email };
+      if (req.params.email !== req.decoded.email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      const result = await fosterCollection.find(query).toArray();
       res.send(result);
     });
 
