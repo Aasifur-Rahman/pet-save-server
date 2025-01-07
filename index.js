@@ -26,6 +26,7 @@ async function run() {
 
     const petsCollection = client.db("petsaveDB").collection("pets");
     const fosterCollection = client.db("petsaveDB").collection("fosterPet");
+    const userCollection = client.db("petsaveDB").collection("users");
 
     //pets related API's
     app.get("/pets", async (req, res) => {
@@ -41,19 +42,32 @@ async function run() {
     });
 
     // user related API's
-    app.post("/user/fosterPost", async (req, res) => {
-      const foster = req.body;
-      const fosterResult = await fosterCollection.insertOne(foster);
-      res.send(fosterResult);
+
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const existingUser = await userCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: "user already exists", insertedId: null });
+      }
+
+      const result = await userCollection.insertOne(user);
+      res.send(result);
     });
 
-    app.get("/user/fosterPost/:email", async (req, res) => {
+    app.get("/profile/fosterPost/:email", async (req, res) => {
       const query = { email: req.params.email };
       if (req.params.email !== req.decoded.email) {
         return res.status(403).send({ message: "forbidden access" });
       }
       const result = await fosterCollection.find(query).toArray();
       res.send(result);
+    });
+
+    app.post("/profile/fosterPost", async (req, res) => {
+      const foster = req.body;
+      const fosterResult = await fosterCollection.insertOne(foster);
+      res.send(fosterResult);
     });
 
     // Send a ping to confirm a successful connection
