@@ -68,7 +68,17 @@ async function run() {
 
     // user related API's
 
-    app.post("/user", async (req, res) => {
+    app.get("/users/:email", verifyToken, async (req, res) => {
+      const query = { email: req.params.email };
+      if (req.params.email !== req.decoded.email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      const result = await userCollection.find(query).toArray();
+      console.log(result);
+      res.send({ userDetails: result });
+    });
+
+    app.post("/users", async (req, res) => {
       const user = req.body;
       const query = { email: user.email };
       const existingUser = await userCollection.findOne(query);
