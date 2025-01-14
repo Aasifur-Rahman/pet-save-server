@@ -68,11 +68,23 @@ async function run() {
 
     // user related API's
 
+    app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    // app.get("/users/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const query = { _id: new ObjectId(id) };
+    //   const result = await userCollection.findOne(query);
+    //   res.send(result);
+    // });
+
     app.get("/users/:email", verifyToken, async (req, res) => {
       const query = { email: req.params.email };
-      if (req.params.email !== req.decoded.email) {
-        return res.status(403).send({ message: "forbidden access" });
-      }
+      // if (req.params.email !== req.decoded.email) {
+      //   return res.status(403).send({ message: "forbidden access" });
+      // }
       const result = await userCollection.find(query).toArray();
       console.log(result);
       res.send({ userDetails: result });
@@ -90,6 +102,27 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/users/:id", verifyToken, async (req, res) => {
+      const user = req.body;
+      const id = req.params.id;
+      console.log("Request body", req.body);
+      console.log("Request ID", req.params.id);
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          name: user.name,
+          nickName: user.nickName,
+          gender: user.gender,
+          country: user.country,
+          language: user.language,
+          image: user.image,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+    // profile related
     app.get("/profile/fosterPost/:email", async (req, res) => {
       const query = { email: req.params.email };
       if (req.params.email !== req.decoded.email) {
