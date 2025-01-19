@@ -1,4 +1,5 @@
 const express = require("express");
+
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
@@ -73,19 +74,13 @@ async function run() {
       res.send(result);
     });
 
-    // app.get("/users/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const query = { _id: new ObjectId(id) };
-    //   const result = await userCollection.findOne(query);
-    //   res.send(result);
-    // });
-
     app.get("/users/:email", verifyToken, async (req, res) => {
       const query = { email: req.params.email };
-      // if (req.params.email !== req.decoded.email) {
-      //   return res.status(403).send({ message: "forbidden access" });
-      // }
-      const result = await userCollection.find(query).toArray();
+      console.log(query);
+      if (req.params.email !== req.decoded.email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      const result = await userCollection.findOne(query);
       console.log(result);
       res.send({ userDetails: result });
     });
