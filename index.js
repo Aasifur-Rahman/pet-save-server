@@ -108,8 +108,7 @@ async function run() {
     app.patch("/users/:id", verifyToken, async (req, res) => {
       const user = req.body;
       const id = req.params.id;
-      console.log("Request body", req.body);
-      console.log("Request ID", req.params.id);
+
       const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
         $set: {
@@ -126,7 +125,7 @@ async function run() {
     });
 
     // profile related
-    app.get("/profile/fosterPost/:email", async (req, res) => {
+    app.get("/user/fosterPost/:email", verifyToken, async (req, res) => {
       const query = { email: req.params.email };
       if (req.params.email !== req.decoded.email) {
         return res.status(403).send({ message: "forbidden access" });
@@ -135,7 +134,7 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/profile/fosterPost", async (req, res) => {
+    app.post("/user/fosterPost", async (req, res) => {
       const foster = req.body;
       const fosterResult = await fosterCollection.insertOne(foster);
       res.send(fosterResult);
