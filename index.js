@@ -131,6 +131,7 @@ async function run() {
         return res.status(403).send({ message: "forbidden access" });
       }
       const result = await fosterCollection.find(query).toArray();
+      console.log(result);
       res.send(result);
     });
 
