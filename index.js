@@ -28,6 +28,7 @@ async function run() {
 
     const petsCollection = client.db("petsaveDB").collection("pets");
     const fosterCollection = client.db("petsaveDB").collection("fosterPet");
+    const lostPetCollection = client.db("petsaveDB").collection("lostPet");
     const userCollection = client.db("petsaveDB").collection("users");
 
     // jwt related API's
@@ -147,6 +148,14 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await fosterCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // lost pet related API's
+
+    app.post("/user/lostPost", async (req, res) => {
+      const lostPet = req.body;
+      const result = await lostPetCollection.insertOne(lostPet);
       res.send(result);
     });
 
