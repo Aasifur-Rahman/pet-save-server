@@ -125,6 +125,8 @@ async function run() {
     });
 
     // profile related
+
+    // foster related apis
     app.get("/user/fosterPost/:email", verifyToken, async (req, res) => {
       const query = { email: req.params.email };
       if (req.params.email !== req.decoded.email) {
@@ -139,6 +141,13 @@ async function run() {
       const foster = req.body;
       const fosterResult = await fosterCollection.insertOne(foster);
       res.send(fosterResult);
+    });
+
+    app.delete("/user/fosterPost/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await fosterCollection.deleteOne(query);
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
