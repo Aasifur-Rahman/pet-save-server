@@ -77,12 +77,12 @@ async function run() {
 
     app.get("/users/:email", verifyToken, async (req, res) => {
       const query = { email: req.params.email };
-      console.log(query);
+
       if (req.params.email !== req.decoded.email) {
         return res.status(403).send({ message: "forbidden access" });
       }
       const result = await userCollection.findOne(query);
-      console.log(result);
+
       res.send({ userDetails: result });
     });
 
@@ -90,7 +90,7 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await userCollection.findOne(query);
-      console.log("from id", result);
+
       res.send(result);
     });
 
@@ -134,7 +134,7 @@ async function run() {
         return res.status(403).send({ message: "forbidden access" });
       }
       const result = await fosterCollection.find(query).toArray();
-      console.log(result);
+
       res.send(result);
     });
 
@@ -152,6 +152,15 @@ async function run() {
     });
 
     // lost pet related API's
+
+    app.get("/user/lostPost/:email", verifyToken, async (req, res) => {
+      const query = { email: req.params.email };
+      if (req.params.email !== req.decoded.email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      const result = await lostPetCollection.find(query).toArray();
+      res.send(result);
+    });
 
     app.post("/user/lostPost", async (req, res) => {
       const lostPet = req.body;
