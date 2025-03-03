@@ -9,6 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { count } = require("console");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.8zp6c.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -79,9 +80,15 @@ async function run() {
       res.send(result);
     });
 
+    app.post("/pets", verifyToken, verifyAdmin, async (req, res) => {
+      const pets = req.body;
+      const result = await petsCollection.insertOne(pets);
+      res.send(result);
+    });
+
     // user related API's
 
-    app.get("/users", async (req, res) => {
+    app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
@@ -100,6 +107,13 @@ async function run() {
         admin = user?.role === "admin";
       }
       res.send({ admin });
+    });
+
+    app.delete("/users/:id", verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
     });
 
     app.get("/users/:email", verifyToken, async (req, res) => {
@@ -133,6 +147,23 @@ async function run() {
       res.send(result);
     });
 
+    app.patch(
+      "/users/admin/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const updateDoc = {
+          $set: {
+            role: "admin",
+          },
+        };
+        const result = await userCollection.updateOne(filter, updateDoc);
+        res.send(result);
+      }
+    );
+
     app.patch("/users/:id", verifyToken, async (req, res) => {
       const user = req.body;
       const id = req.params.id;
@@ -151,8 +182,6 @@ async function run() {
       const result = await userCollection.updateOne(filter, updatedDoc);
       res.send(result);
     });
-
-    // profile related
 
     // foster related apis
     app.get("/user/fosterPost/:email", verifyToken, async (req, res) => {
@@ -200,6 +229,63 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const result = await lostPetCollection.deleteOne(query);
       res.send(result);
+    });
+
+    // admin related API's
+
+    app.get("/admin-stats", verifyToken, verifyAdmin, async (req, res) => {
+      const users = await userCollection.estimatedDocumentCount();
+      const allPets = await petsCollection.estimatedDocumentCount();
+      const pendingFosterPets = await fosterCollection.countDocuments({
+        status: "pending",
+      });
+      const pendingLostPets = await lostPetCollection.countDocuments({
+        status: "pending",
+      });
+
+      res.send({ users, allPets, pendingFosterPets, pendingLostPets });
+    });
+
+    app.get("/chart-stats", verifyToken, verifyAdmin, async (req, res) => {
+      try {
+        const categoryStats = await petsCollection
+          .aggregate([
+            {
+              $group: {
+                _id: "$category",
+                count: { $sum: 1 },
+              },
+            },
+          ])
+          .toArray();
+
+        res.send(categoryStats);
+      } catch (error) {
+        res.status(500).json({ message: "Error fetching chart status", error });
+      }
+    });
+
+    app.get("/vs-chart", verifyToken, verifyAdmin, async (req, res) => {
+      try {
+        const approvedFosterCount = await fosterCollection.countDocuments({
+          status: "approved",
+        });
+
+        const approvedLostCount = await lostPetCollection.countDocuments({
+          status: "approved",
+        });
+
+        const fosterData = {
+          approved: approvedFosterCount === 0 ? 0 : pendingFosterCount,
+        };
+        const lostData = {
+          approved: approvedLostCount === 0 ? 0 : approvedFosterCount,
+        };
+
+        return res.send({ fosterPetData: fosterData, lostPetData: lostData });
+      } catch (err) {
+        return res.status(500).json({ message: "Internal server Error" });
+      }
     });
 
     // Send a ping to confirm a successful connection
