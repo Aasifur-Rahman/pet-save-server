@@ -86,6 +86,46 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/pet/:id", async (req, res) => {
+      const id = req.params.id;
+      const pet = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          name: pet.name,
+          type: pet.petType,
+          breed: pet.typeofBreed,
+          age: pet.petAge,
+          category: pet.category,
+          friendly: pet.friendly,
+          Nature: pet.petsNature,
+          childFriendly: pet.childFriendly,
+          catFriendly: pet.catFriendly,
+          pottyTrained: pet.pottyTrained,
+          location: pet.location,
+          medicalNotes: {
+            desexed: pet.desexed,
+            vaccinated: pet.vaccinated,
+            microChipped: pet.microChipped,
+            allWormed: pet.allWormed,
+            fleaTreated: pet.fleaTreated,
+            heartWormTreated: pet.heartWormTreated,
+          },
+          description: pet.description,
+          images: pet.images,
+        },
+      };
+      const result = await petsCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+    app.delete("/pet/:id", verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await petsCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // user related API's
 
     app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
@@ -232,6 +272,27 @@ async function run() {
     });
 
     // admin related API's
+
+    app.get("/pending/lostpets", verifyAdmin, verifyToken, async (req, res) => {
+      const pendingLostPets = await lostPetCollection
+        .find({ status: "pending" })
+        .toArray();
+      res.send(pendingLostPets);
+    });
+
+    app.get(
+      "/pending/fosterpets",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const pendingFosterPets = await fosterCollection
+          .find({
+            status: "pending",
+          })
+          .toArray();
+        res.send(pendingFosterPets);
+      }
+    );
 
     app.get("/admin-stats", verifyToken, verifyAdmin, async (req, res) => {
       const users = await userCollection.estimatedDocumentCount();
