@@ -294,6 +294,59 @@ async function run() {
       }
     );
 
+    app.patch("/approve/lostpets/:id"),
+      verifyAdmin,
+      verifyToken,
+      async (req, res) => {
+        const LostPostId = req.params.id;
+
+        const lostPost = await lostPetCollection.findOne({
+          _id: new ObjectId(LostPostId),
+        });
+
+        const result = await lostPetCollection.updateOne(
+          { _id: new ObjectId(LostPostId) },
+          {
+            $set: { status: "approved", approvedAt: new Date() },
+          }
+        );
+        const lostPetData = {
+          ...lostPost,
+          status: "approved",
+          category: "lost pet",
+          approvedAt: new Date(),
+        };
+        const sendAllPet = await all.insertOne(lostPetData);
+
+        res.send({ result, sendAllPet });
+      };
+    app.patch("/approve/fosterpets/:id"),
+      verifyAdmin,
+      verifyToken,
+      async (req, res) => {
+        const FosterPostId = req.params.id;
+
+        const fosterPost = await fosterCollection.findOne({
+          _id: new ObjectId(FosterPostId),
+        });
+
+        const result = await lostPetCollection.updateOne(
+          { _id: new ObjectId(FosterPostId) },
+          {
+            $set: { status: "approved", approvedAt: new Date() },
+          }
+        );
+        const lostPetData = {
+          ...fosterPost,
+          status: "approved",
+          category: "fostering home",
+          approvedAt: new Date(),
+        };
+        const sendAllPet = await all.insertOne(lostPetData);
+
+        res.send({ result, sendAllPet });
+      };
+
     app.get("/admin-stats", verifyToken, verifyAdmin, async (req, res) => {
       const users = await userCollection.estimatedDocumentCount();
       const allPets = await petsCollection.estimatedDocumentCount();
