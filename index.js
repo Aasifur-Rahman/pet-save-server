@@ -330,7 +330,7 @@ async function run() {
           _id: new ObjectId(FosterPostId),
         });
 
-        const result = await lostPetCollection.updateOne(
+        const result = await fosterCollection.updateOne(
           { _id: new ObjectId(FosterPostId) },
           {
             $set: { status: "approved", approvedAt: new Date() },
