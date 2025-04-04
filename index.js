@@ -273,7 +273,7 @@ async function run() {
 
     // admin related API's
 
-    app.get("/pending/lostpets", verifyAdmin, verifyToken, async (req, res) => {
+    app.get("/pending/lostpets", verifyToken, verifyAdmin, async (req, res) => {
       const pendingLostPets = await lostPetCollection
         .find({ status: "pending" })
         .toArray();
@@ -295,8 +295,8 @@ async function run() {
     );
 
     app.patch("/approve/lostpets/:id"),
-      verifyAdmin,
       verifyToken,
+      verifyAdmin,
       async (req, res) => {
         const LostPostId = req.params.id;
 
@@ -321,8 +321,8 @@ async function run() {
         res.send({ result, sendAllPet });
       };
     app.patch("/approve/fosterpets/:id"),
-      verifyAdmin,
       verifyToken,
+      verifyAdmin,
       async (req, res) => {
         const FosterPostId = req.params.id;
 
