@@ -294,7 +294,7 @@ async function run() {
       }
     );
 
-    app.patch("/approve/lostpets/:id"),
+    app.patch("/lostPets/:id"),
       verifyToken,
       verifyAdmin,
       async (req, res) => {
@@ -310,17 +310,20 @@ async function run() {
             $set: { status: "approved", approvedAt: new Date() },
           }
         );
-        const lostPetData = {
-          ...lostPost,
-          status: "approved",
-          category: "lost pet",
-          approvedAt: new Date(),
-        };
-        const sendAllPet = await all.insertOne(lostPetData);
+        if (result.modifiedCount > 0) {
+          const lostPetData = {
+            ...lostPost,
+            status: "approved",
+            category: "lost pet",
+            approvedAt: new Date(),
+          };
 
-        res.send({ result, sendAllPet });
+          const sendAllPet = await all.insertOne(lostPetData);
+
+          res.send({ result, sendAllPet });
+        }
       };
-    app.patch("/approve/fosterpets/:id"),
+    app.patch("/fosterPets/:id"),
       verifyToken,
       verifyAdmin,
       async (req, res) => {
