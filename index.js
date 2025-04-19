@@ -264,6 +264,33 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/user/lostPost/:id", verifyToken, async (req, res) => {
+      const lostPet = req.params.body;
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+
+      const updateDoc = {
+        $set: {
+          firstName: lostPet.firstName,
+          lastName: lostPet.lastName,
+          category: lostPet.category,
+          address: lostPet.address,
+          petAge: lostPet.petAge,
+          typeofPet: lostPet.typeofPet,
+          typeofBreed: lostPet.typeofBreed,
+          petName: lostPet.petName,
+          PetNature: lostPet.PetNature,
+          respondsToName: lostPet.respondsToName,
+          vaccinated: lostPet.vaccinated,
+          reward: lostPet.reward,
+          image: lostPet.image,
+        },
+      };
+      const result = await lostPetCollection.updateOne(query, updateDoc);
+
+      res.send(result);
+    });
+
     app.delete("/user/lostPost/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -300,9 +327,11 @@ async function run() {
       async (req, res) => {
         const LostPostId = req.params.id;
 
-        const lostPost = await lostPetCollection.findOne({
-          _id: new ObjectId(LostPostId),
-        });
+        const id = { _id: new ObjectId(LostPostId) };
+        const lostPost = await lostPetCollection.findOne(id);
+        if (!lostPost) {
+          return res.status(404).send({ message: "Lost post not found" });
+        }
 
         const result = await lostPetCollection.updateOne(
           { _id: new ObjectId(LostPostId) },
