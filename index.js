@@ -258,6 +258,18 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/user/lostPost", async (req, res) => {
+      const result = await lostPetCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/user/lostPet/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await lostPetCollection.findOne(query);
+      res.send(result);
+    });
+
     app.post("/user/lostPost", async (req, res) => {
       const lostPet = req.body;
       const result = await lostPetCollection.insertOne(lostPet);
