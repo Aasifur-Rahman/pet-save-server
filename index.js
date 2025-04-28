@@ -80,7 +80,7 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/pets", verifyToken, verifyAdmin, async (req, res) => {
+    app.post("/pets", async (req, res) => {
       const pets = req.body;
       const result = await petsCollection.insertOne(pets);
       res.send(result);
@@ -119,7 +119,7 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/pet/:id", verifyToken, verifyAdmin, async (req, res) => {
+    app.delete("/pet/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await petsCollection.deleteOne(query);
@@ -273,6 +273,7 @@ async function run() {
     app.post("/user/lostPost", async (req, res) => {
       const lostPet = req.body;
       const result = await lostPetCollection.insertOne(lostPet);
+
       res.send(result);
     });
 
@@ -307,6 +308,7 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await lostPetCollection.deleteOne(query);
+
       res.send(result);
     });
 
